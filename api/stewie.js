@@ -50,7 +50,7 @@ export default async function handler(req) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'llama3-70b-8192',
+          model: 'llama3-8b-8192',
           messages,
           temperature: 0.9,
           max_tokens: 100,
