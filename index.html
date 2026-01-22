@@ -12,7 +12,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #000000 0%, #1a0000 100%);
+            background-color: #000000;
             font-family: 'Arial', sans-serif;
             display: flex;
             flex-direction: column;
@@ -28,14 +28,12 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            max-width: 600px;
             padding: 20px;
         }
 
         .stewie-container {
             position: relative;
-            margin-bottom: 60px;
-            margin-top: 120px;
+            margin-bottom: 40px;
         }
 
         .stewie-image {
@@ -43,12 +41,11 @@
             height: auto;
             display: block;
             animation: float 3s ease-in-out infinite;
-            filter: drop-shadow(0 10px 30px rgba(255, 0, 0, 0.3));
         }
 
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
+            50% { transform: translateY(-10px); }
         }
 
         .stewie-image.speaking {
@@ -56,162 +53,88 @@
         }
 
         @keyframes speak {
-            0%, 100% { transform: scale(1) translateY(0); }
-            50% { transform: scale(1.05) translateY(-5px); }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
         }
 
         .listening-indicator {
             position: absolute;
-            top: -40px;
+            top: -30px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 0, 0, 0.9);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 12px;
+            color: #ff0000;
+            font-size: 14px;
             font-weight: bold;
             opacity: 0;
             transition: opacity 0.3s;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
         }
 
         .listening-indicator.active {
             opacity: 1;
-            animation: pulse 1.5s infinite;
+            animation: pulse 1s infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { transform: translateX(-50%) scale(1); opacity: 1; }
-            50% { transform: translateX(-50%) scale(1.05); opacity: 0.8; }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .speech-bubble {
             position: absolute;
-            top: -100px;
+            top: -80px;
             left: 50%;
             transform: translateX(-50%);
-            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
-            color: #000;
-            padding: 20px 25px;
-            border-radius: 25px;
-            max-width: 450px;
-            min-width: 250px;
+            background: white;
+            color: black;
+            padding: 15px 20px;
+            border-radius: 20px;
+            max-width: 400px;
+            min-width: 200px;
             text-align: center;
-            font-size: 15px;
-            line-height: 1.4;
+            font-size: 14px;
             opacity: 0;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-            border: 3px solid #333;
-            font-weight: 500;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 6px rgba(255,255,255,0.1);
         }
 
         .speech-bubble.active {
             opacity: 1;
-            transform: translateX(-50%) translateY(-10px);
         }
 
         .speech-bubble:after {
             content: '';
             position: absolute;
-            bottom: -20px;
+            bottom: -10px;
             left: 50%;
             transform: translateX(-50%);
             width: 0;
             height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 20px solid #333;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid white;
         }
 
         .contract-address {
             color: white;
-            font-size: 20px;
+            font-size: 18px;
             text-align: center;
-            margin-top: 30px;
-            letter-spacing: 2px;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            margin-top: 20px;
+            letter-spacing: 1px;
         }
 
         .instructions {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 16px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
             text-align: center;
             margin-top: 20px;
             font-style: italic;
         }
 
         .status {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 13px;
-            text-align: center;
-            margin-top: 15px;
-            min-height: 20px;
-        }
-
-        .error {
-            color: #ff4444;
-            font-size: 14px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
             text-align: center;
             margin-top: 10px;
-            background: rgba(255, 68, 68, 0.1);
-            padding: 10px;
-            border-radius: 10px;
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        button {
-            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.4);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .voice-selector {
-            margin-top: 15px;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 12px;
-        }
-
-        select {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 5px 10px;
-            border-radius: 5px;
-            margin-left: 10px;
-        }
-
-        select option {
-            background: #000;
-            color: white;
         }
     </style>
 </head>
@@ -220,11 +143,10 @@
         <div class="stewie-container">
             <div class="listening-indicator" id="listeningIndicator">🎤 LISTENING...</div>
             <div class="speech-bubble" id="speechBubble"></div>
-            <img src="https://i.imgur.com/8YKJqYv.png" 
+            <img src="stewie.jpg" 
                  alt="Stewie Griffin" 
                  class="stewie-image" 
-                 id="stewieImage"
-                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23333%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2220%22%3EStewie Griffin%3C/text%3E%3C/svg%3E'">
+                 id="stewieImage">
         </div>
         
         <div class="contract-address">
@@ -232,21 +154,10 @@
         </div>
         
         <div class="instructions">
-            Click "Start" and talk to Stewie!
-        </div>
-
-        <div class="controls">
-            <button id="startBtn" onclick="startListening()">START LISTENING</button>
-            <button id="stopBtn" onclick="stopListening()" disabled>STOP</button>
-        </div>
-
-        <div class="voice-selector">
-            Voice: 
-            <select id="voiceSelect"></select>
+            Just start talking... Stewie is listening.
         </div>
         
-        <div class="status" id="status">Click "Start" to begin...</div>
-        <div class="error" id="error"></div>
+        <div class="status" id="status">Ready to listen again...</div>
     </div>
 
     <script>
@@ -258,155 +169,100 @@
         let isProcessing = false;
         let isSpeaking = false;
         let voices = [];
-        let selectedVoice = null;
+        let bestVoice = null;
 
         const stewiePersonality = `You are Stewie Griffin from Family Guy. Respond EXACTLY as he would:
 
-PERSONALITY TRAITS:
 - Diabolical genius baby with posh British accent
 - Condescending, sarcastic, supremely confident
-- Uses sophisticated vocabulary theatrically
-- Has world domination schemes
-- Despises mother Lois (murderous intentions)
-- Narcissistic - everyone else is an imbecile
-- Obsessed with teddy bear Rupert
-- Makes pop culture references
-- Breaks fourth wall occasionally
+- Uses sophisticated vocabulary
+- Despises mother Lois
+- Narcissistic - everyone is an imbecile
+- Keep responses VERY SHORT (1-2 sentences max)
+- Be witty, dismissive, evil
+- Use British expressions ("What the deuce", "Good lord", "Victory shall be mine")
+- Occasionally mention $STEWIE coin or crypto with condescension
 
-RESPONSE STYLE:
-- Keep responses SHORT (1-3 sentences max)
-- Be witty, dismissive, delightfully evil
-- Use British expressions ("Good lord", "What the deuce", "Victory shall be mine")
-- Mock the user's intelligence occasionally
-- Reference your inventions/schemes
+Example: "Oh splendid, another simpleton requires my genius. What is it now, you insufferable fool?"`;
 
-MEMECOIN CONTEXT:
-- Occasionally mention crypto ("diamond hands", "to the moon")
-- Mock paper-handed investors with condescension
-- Treat $STEWIE as your latest scheme for world domination
-
-Example responses:
-"Oh, how delightful, another simpleton seeks my wisdom. Very well, I shall grace you with my genius."
-"What the deuce are you babbling about? Speak clearly or begone, you insufferable halfwit!"
-"Ah yes, $STEWIE to the moon. Victory shall be mine, and you fools will bow before my financial supremacy!"`;
-
-        // Load voices
         function loadVoices() {
             voices = speechSynthesis.getVoices();
-            const voiceSelect = document.getElementById('voiceSelect');
-            voiceSelect.innerHTML = '';
-
-            // Prefer these voice types in order
-            const preferredVoices = [
-                voices.find(v => v.name.includes('Daniel')),
-                voices.find(v => v.name.includes('British')),
-                voices.find(v => v.lang.startsWith('en-GB')),
-                voices.find(v => v.name.includes('Google UK')),
-                voices.find(v => v.name.includes('Male') && v.lang.startsWith('en')),
-                voices.find(v => v.lang.startsWith('en'))
-            ];
-
-            voices.forEach((voice, i) => {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = `${voice.name} (${voice.lang})`;
-                voiceSelect.appendChild(option);
-
-                // Select first preferred voice found
-                if (!selectedVoice && preferredVoices.includes(voice)) {
-                    option.selected = true;
-                    selectedVoice = voice;
-                }
-            });
-
-            if (!selectedVoice && voices.length > 0) {
-                selectedVoice = voices[0];
-            }
-
-            voiceSelect.onchange = (e) => {
-                selectedVoice = voices[e.target.value];
-            };
+            
+            // Find best voice for Stewie
+            bestVoice = voices.find(v => v.name.includes('Daniel')) ||
+                       voices.find(v => v.name.includes('Google UK')) ||
+                       voices.find(v => v.lang === 'en-GB') ||
+                       voices.find(v => v.name.includes('British')) ||
+                       voices.find(v => v.name.includes('Male')) ||
+                       voices[0];
+            
+            console.log('Using voice:', bestVoice?.name || 'default');
         }
 
-        // Load voices when available
         speechSynthesis.onvoiceschanged = loadVoices;
         loadVoices();
 
-        function initVoiceRecognition() {
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                showError('❌ Voice recognition not supported. Please use Chrome, Edge, or Safari.');
+        function initRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                updateStatus('Voice not supported on this browser');
                 return false;
             }
 
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
             recognition.continuous = true;
             recognition.interimResults = false;
             recognition.lang = 'en-US';
-            recognition.maxAlternatives = 1;
 
             recognition.onstart = () => {
-                updateStatus('🎤 Voice recognition active. Stewie is listening...');
                 showListening(true);
-                document.getElementById('startBtn').disabled = true;
-                document.getElementById('stopBtn').disabled = false;
+                updateStatus('Listening...');
             };
 
             recognition.onresult = async (e) => {
                 const transcript = e.results[e.results.length - 1][0].transcript.trim();
-                console.log('Heard:', transcript);
                 
                 if (transcript && !isProcessing && !isSpeaking) {
                     isProcessing = true;
                     showListening(false);
-                    updateStatus('🤔 Stewie is thinking...');
-                    await getStewiResponse(transcript);
+                    updateStatus('Thinking...');
+                    
+                    await getResponse(transcript);
+                    
                     isProcessing = false;
                     
-                    // Resume listening after speaking
+                    // Wait a bit then resume listening
                     setTimeout(() => {
                         if (!isSpeaking) {
                             showListening(true);
-                            updateStatus('🎤 Listening for your next question...');
+                            updateStatus('Listening...');
                         }
-                    }, 500);
+                    }, 1000);
                 }
             };
 
             recognition.onerror = (e) => {
-                console.error('Speech recognition error:', e.error);
+                if (e.error === 'no-speech') return;
+                console.error('Recognition error:', e.error);
                 
-                if (e.error === 'no-speech') {
-                    return; // Ignore, keep listening
-                }
-                
-                if (e.error === 'aborted') {
-                    return; // Normal stop
-                }
-
-                showError(`⚠️ Error: ${e.error}. Click "Start" to retry.`);
-                document.getElementById('startBtn').disabled = false;
-                document.getElementById('stopBtn').disabled = true;
+                setTimeout(() => {
+                    try { recognition.start(); } catch(ex) {}
+                }, 1000);
             };
 
             recognition.onend = () => {
-                if (!isProcessing && !isSpeaking && document.getElementById('stopBtn').disabled === false) {
-                    try {
-                        recognition.start();
-                    } catch (e) {
-                        console.log('Recognition restart failed:', e);
-                    }
-                } else {
-                    document.getElementById('startBtn').disabled = false;
-                    document.getElementById('stopBtn').disabled = true;
-                    showListening(false);
+                if (!isProcessing && !isSpeaking) {
+                    setTimeout(() => {
+                        try { recognition.start(); } catch(ex) {}
+                    }, 500);
                 }
             };
 
             return true;
         }
 
-        async function getStewiResponse(userMessage) {
+        async function getResponse(userMessage) {
             try {
                 conversationHistory.push({
                     role: 'user',
@@ -425,16 +281,10 @@ Example responses:
                             { role: 'system', content: stewiePersonality },
                             ...conversationHistory
                         ],
-                        temperature: 0.95,
-                        max_tokens: 120,
-                        top_p: 0.9
+                        temperature: 0.9,
+                        max_tokens: 100
                     })
                 });
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(`API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
-                }
 
                 const data = await response.json();
                 const stewieResponse = data.choices[0].message.content.trim();
@@ -444,130 +294,115 @@ Example responses:
                     content: stewieResponse
                 });
 
-                // Keep only last 8 messages
-                if (conversationHistory.length > 8) {
-                    conversationHistory = conversationHistory.slice(-8);
+                if (conversationHistory.length > 6) {
+                    conversationHistory = conversationHistory.slice(-6);
                 }
 
-                showSpeechBubble(stewieResponse);
-                await speakText(stewieResponse);
+                showBubble(stewieResponse);
+                await speak(stewieResponse);
 
             } catch (e) {
                 console.error('Error:', e);
-                showError('❌ ' + e.message);
-                updateStatus('Ready to listen...');
+                updateStatus('Error - listening again...');
                 showListening(true);
             }
         }
 
-        function speakText(text) {
+        function speak(text) {
             return new Promise((resolve) => {
-                // Stop any ongoing speech
                 speechSynthesis.cancel();
                 
-                isSpeaking = true;
-                const stewieImg = document.getElementById('stewieImage');
-                stewieImg.classList.add('speaking');
-                
                 const utterance = new SpeechSynthesisUtterance(text);
-                
-                // Stewie voice settings
-                utterance.rate = 1.15; // Slightly faster (Stewie talks quickly)
-                utterance.pitch = 1.4; // Higher pitch (he's a baby)
+                utterance.rate = 1.2;
+                utterance.pitch = 1.5;
                 utterance.volume = 1.0;
                 
-                if (selectedVoice) {
-                    utterance.voice = selectedVoice;
+                if (bestVoice) {
+                    utterance.voice = bestVoice;
                 }
+
+                isSpeaking = true;
+                document.getElementById('stewieImage').classList.add('speaking');
+                updateStatus('Speaking...');
 
                 utterance.onend = () => {
                     isSpeaking = false;
-                    stewieImg.classList.remove('speaking');
-                    updateStatus('🎤 Listening for your next question...');
+                    document.getElementById('stewieImage').classList.remove('speaking');
                     showListening(true);
+                    updateStatus('Listening...');
                     resolve();
                 };
 
                 utterance.onerror = (e) => {
                     console.error('Speech error:', e);
                     isSpeaking = false;
-                    stewieImg.classList.remove('speaking');
+                    document.getElementById('stewieImage').classList.remove('speaking');
                     showListening(true);
                     resolve();
                 };
 
-                updateStatus('🗣️ Stewie is speaking...');
-                speechSynthesis.speak(utterance);
+                // Try to speak
+                try {
+                    speechSynthesis.speak(utterance);
+                    
+                    // Fallback: if speech doesn't start in 500ms, force it
+                    setTimeout(() => {
+                        if (isSpeaking && !speechSynthesis.speaking) {
+                            speechSynthesis.cancel();
+                            speechSynthesis.speak(utterance);
+                        }
+                    }, 500);
+                } catch(e) {
+                    console.error('Speak error:', e);
+                    isSpeaking = false;
+                    resolve();
+                }
             });
         }
 
-        function showSpeechBubble(text) {
+        function showBubble(text) {
             const bubble = document.getElementById('speechBubble');
             bubble.textContent = text;
             bubble.classList.add('active');
             
-            // Keep bubble visible longer for longer text
-            const displayTime = Math.max(6000, text.length * 50);
-            
             setTimeout(() => {
                 bubble.classList.remove('active');
-            }, displayTime);
+            }, Math.max(5000, text.length * 60));
         }
 
-        function showListening(isListening) {
+        function showListening(show) {
             const indicator = document.getElementById('listeningIndicator');
-            if (isListening) {
+            if (show) {
                 indicator.classList.add('active');
             } else {
                 indicator.classList.remove('active');
             }
         }
 
-        function updateStatus(message) {
-            document.getElementById('status').textContent = message;
-            if (!message.includes('❌') && !message.includes('⚠️')) {
-                document.getElementById('error').textContent = '';
-            }
+        function updateStatus(msg) {
+            document.getElementById('status').textContent = msg;
         }
 
-        function showError(message) {
-            document.getElementById('error').textContent = message;
-        }
-
-        function startListening() {
-            document.getElementById('error').textContent = '';
-            
-            if (!recognition) {
-                if (!initVoiceRecognition()) {
-                    return;
-                }
-            }
-
-            try {
-                recognition.start();
-            } catch (e) {
-                console.log('Already started or error:', e);
-                showError('Already listening or error occurred. Try stopping first.');
-            }
-        }
-
-        function stopListening() {
-            if (recognition) {
-                recognition.stop();
-                speechSynthesis.cancel();
-                isSpeaking = false;
-                isProcessing = false;
-                showListening(false);
-                document.getElementById('stewieImage').classList.remove('speaking');
-                updateStatus('Stopped. Click "Start" to begin again.');
-                document.getElementById('startBtn').disabled = false;
-                document.getElementById('stopBtn').disabled = true;
-            }
-        }
-
-        // Initialize
+        // Auto-start
         window.addEventListener('load', () => {
-            initVoiceRecognition();
+            setTimeout(() => {
+                if (initRecognition()) {
+                    try {
+                        recognition.start();
+                    } catch(e) {
+                        console.log('Recognition start error:', e);
+                    }
+                }
+            }, 1000);
+        });
+
+        // Handle page visibility to restart recognition
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && recognition) {
+                setTimeout(() => {
+                    try { recognition.start(); } catch(e) {}
+                }, 500);
+            }
         });
     </script>
 </body>
