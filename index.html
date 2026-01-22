@@ -20,6 +20,7 @@
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
+            touch-action: manipulation;
         }
 
         .container {
@@ -34,6 +35,7 @@
         .stewie-container {
             position: relative;
             margin-bottom: 40px;
+            cursor: pointer;
         }
 
         .stewie-image {
@@ -41,6 +43,7 @@
             height: auto;
             display: block;
             animation: float 3s ease-in-out infinite;
+            user-select: none;
         }
 
         @keyframes float {
@@ -130,17 +133,41 @@
             font-style: italic;
         }
 
+        .instructions.highlight {
+            color: #ff0000;
+            font-size: 16px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
         .status {
             color: rgba(255, 255, 255, 0.4);
             font-size: 12px;
             text-align: center;
             margin-top: 10px;
+            min-height: 20px;
+        }
+
+        .error {
+            color: #ff4444;
+            font-size: 11px;
+            text-align: center;
+            margin-top: 5px;
+            padding: 10px;
+            background: rgba(255, 68, 68, 0.1);
+            border-radius: 5px;
+            max-width: 90%;
+            word-break: break-word;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="stewie-container">
+        <div class="stewie-container" id="stewieContainer">
             <div class="listening-indicator" id="listeningIndicator">🎤 LISTENING...</div>
             <div class="speech-bubble" id="speechBubble"></div>
             <img src="stewie.jpg" 
@@ -153,23 +180,23 @@
             CONTRACT: 0xSTEWIE...GRIFFIN
         </div>
         
-        <div class="instructions">
-            Just start talking... Stewie is listening.
+        <div class="instructions" id="instructions">
+            Tap Stewie to start talking...
         </div>
         
-        <div class="status" id="status">Ready to listen again...</div>
+        <div class="status" id="status"></div>
+        <div class="error" id="error"></div>
     </div>
 
     <script>
-        const GROQ_API_KEY = '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';
-        const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-
         let recognition;
         let conversationHistory = [];
         let isProcessing = false;
         let isSpeaking = false;
+        let isListening = false;
         let voices = [];
         let bestVoice = null;
+        let hasStarted = false;
 
         const stewiePersonality = `You are Stewie Griffin from Family Guy. Respond EXACTLY as he would:
 
@@ -188,7 +215,6 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
         function loadVoices() {
             voices = speechSynthesis.getVoices();
             
-            // Find best voice for Stewie
             bestVoice = voices.find(v => v.name.includes('Daniel')) ||
                        voices.find(v => v.name.includes('Google UK')) ||
                        voices.find(v => v.lang === 'en-GB') ||
@@ -196,7 +222,7 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
                        voices.find(v => v.name.includes('Male')) ||
                        voices[0];
             
-            console.log('Using voice:', bestVoice?.name || 'default');
+            console.log('Voice loaded:', bestVoice?.name || 'default');
         }
 
         speechSynthesis.onvoiceschanged = loadVoices;
@@ -206,7 +232,7 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             
             if (!SpeechRecognition) {
-                updateStatus('Voice not supported on this browser');
+                showError('Voice recognition not supported on this browser. Use Chrome or Safari.');
                 return false;
             }
 
@@ -216,12 +242,16 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
             recognition.lang = 'en-US';
 
             recognition.onstart = () => {
+                isListening = true;
                 showListening(true);
                 updateStatus('Listening...');
+                document.getElementById('instructions').textContent = 'Stewie is listening...';
+                document.getElementById('instructions').classList.remove('highlight');
             };
 
             recognition.onresult = async (e) => {
                 const transcript = e.results[e.results.length - 1][0].transcript.trim();
+                console.log('Heard:', transcript);
                 
                 if (transcript && !isProcessing && !isSpeaking) {
                     isProcessing = true;
@@ -232,9 +262,8 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
                     
                     isProcessing = false;
                     
-                    // Wait a bit then resume listening
                     setTimeout(() => {
-                        if (!isSpeaking) {
+                        if (!isSpeaking && isListening) {
                             showListening(true);
                             updateStatus('Listening...');
                         }
@@ -243,16 +272,24 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
             };
 
             recognition.onerror = (e) => {
-                if (e.error === 'no-speech') return;
                 console.error('Recognition error:', e.error);
                 
+                if (e.error === 'no-speech') return;
+                
+                if (e.error === 'not-allowed') {
+                    showError('Microphone access denied. Please allow microphone and refresh.');
+                    return;
+                }
+                
                 setTimeout(() => {
-                    try { recognition.start(); } catch(ex) {}
+                    if (isListening && !isSpeaking) {
+                        try { recognition.start(); } catch(ex) {}
+                    }
                 }, 1000);
             };
 
             recognition.onend = () => {
-                if (!isProcessing && !isSpeaking) {
+                if (isListening && !isProcessing && !isSpeaking) {
                     setTimeout(() => {
                         try { recognition.start(); } catch(ex) {}
                     }, 500);
@@ -269,25 +306,36 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
                     content: userMessage
                 });
 
-                const response = await fetch(GROQ_API_URL, {
+                // Call our serverless function instead of Groq directly
+                const response = await fetch('/api/stewie', {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${GROQ_API_KEY}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'llama-3.1-70b-versatile',
                         messages: [
                             { role: 'system', content: stewiePersonality },
                             ...conversationHistory
-                        ],
-                        temperature: 0.9,
-                        max_tokens: 100
+                        ]
                     })
                 });
 
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error:', errorText);
+                    showError(`Error: ${response.status}`);
+                    throw new Error(`API returned ${response.status}`);
+                }
+
                 const data = await response.json();
-                const stewieResponse = data.choices[0].message.content.trim();
+
+                if (!data.response) {
+                    showError('Invalid response from server');
+                    throw new Error('Invalid response');
+                }
+
+                const stewieResponse = data.response;
+                console.log('Stewie says:', stewieResponse);
 
                 conversationHistory.push({
                     role: 'assistant',
@@ -302,9 +350,11 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
                 await speak(stewieResponse);
 
             } catch (e) {
-                console.error('Error:', e);
-                updateStatus('Error - listening again...');
-                showListening(true);
+                console.error('Full error:', e);
+                showError('Connection error. Check console.');
+                updateStatus('Error - tap Stewie to retry...');
+                isListening = false;
+                showListening(false);
             }
         }
 
@@ -328,8 +378,10 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
                 utterance.onend = () => {
                     isSpeaking = false;
                     document.getElementById('stewieImage').classList.remove('speaking');
-                    showListening(true);
-                    updateStatus('Listening...');
+                    if (isListening) {
+                        showListening(true);
+                        updateStatus('Listening...');
+                    }
                     resolve();
                 };
 
@@ -337,15 +389,15 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
                     console.error('Speech error:', e);
                     isSpeaking = false;
                     document.getElementById('stewieImage').classList.remove('speaking');
-                    showListening(true);
+                    if (isListening) {
+                        showListening(true);
+                    }
                     resolve();
                 };
 
-                // Try to speak
                 try {
                     speechSynthesis.speak(utterance);
                     
-                    // Fallback: if speech doesn't start in 500ms, force it
                     setTimeout(() => {
                         if (isSpeaking && !speechSynthesis.speaking) {
                             speechSynthesis.cancel();
@@ -383,27 +435,46 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
             document.getElementById('status').textContent = msg;
         }
 
-        // Auto-start
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                if (initRecognition()) {
-                    try {
-                        recognition.start();
-                    } catch(e) {
-                        console.log('Recognition start error:', e);
-                    }
+        function showError(msg) {
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = msg;
+            errorEl.style.display = 'block';
+            console.error('Error:', msg);
+        }
+
+        async function startApp() {
+            if (hasStarted) return;
+            hasStarted = true;
+
+            // Initialize audio context with user gesture
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            await audioContext.resume();
+
+            // Test speech synthesis
+            const testUtterance = new SpeechSynthesisUtterance('');
+            speechSynthesis.speak(testUtterance);
+            speechSynthesis.cancel();
+
+            if (initRecognition()) {
+                try {
+                    isListening = true;
+                    recognition.start();
+                } catch(e) {
+                    console.error('Start error:', e);
+                    showError('Could not start. Please allow microphone access.');
                 }
-            }, 1000);
+            }
+        }
+
+        // Tap Stewie to start
+        document.getElementById('stewieContainer').addEventListener('click', startApp);
+        document.getElementById('stewieContainer').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startApp();
         });
 
-        // Handle page visibility to restart recognition
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && recognition) {
-                setTimeout(() => {
-                    try { recognition.start(); } catch(e) {}
-                }, 500);
-            }
-        });
+        // Make instructions blink to encourage tap
+        document.getElementById('instructions').classList.add('highlight');
     </script>
 </body>
 </html>
