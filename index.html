@@ -36,6 +36,9 @@
             position: relative;
             margin-bottom: 40px;
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
         }
 
         .stewie-image {
@@ -44,6 +47,7 @@
             display: block;
             animation: float 3s ease-in-out infinite;
             user-select: none;
+            pointer-events: none;
         }
 
         @keyframes float {
@@ -70,6 +74,7 @@
             font-weight: bold;
             opacity: 0;
             transition: opacity 0.3s;
+            pointer-events: none;
         }
 
         .listening-indicator.active {
@@ -98,6 +103,7 @@
             opacity: 0;
             transition: opacity 0.3s;
             box-shadow: 0 4px 6px rgba(255,255,255,0.1);
+            pointer-events: none;
         }
 
         .speech-bubble.active {
@@ -189,6 +195,8 @@
     </div>
 
     <script>
+        console.log('🚀 Script loaded');
+        
         let recognition;
         let conversationHistory = [];
         let isProcessing = false;
@@ -242,6 +250,7 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
             recognition.lang = 'en-US';
 
             recognition.onstart = () => {
+                console.log('🎤 Recognition started');
                 isListening = true;
                 showListening(true);
                 updateStatus('Listening...');
@@ -289,9 +298,15 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
             };
 
             recognition.onend = () => {
+                console.log('🎤 Recognition ended');
                 if (isListening && !isProcessing && !isSpeaking) {
                     setTimeout(() => {
-                        try { recognition.start(); } catch(ex) {}
+                        try { 
+                            console.log('🔄 Restarting recognition...');
+                            recognition.start(); 
+                        } catch(ex) {
+                            console.error('Restart failed:', ex);
+                        }
                     }, 500);
                 }
             };
@@ -306,7 +321,7 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
                     content: userMessage
                 });
 
-                // Call our serverless function instead of Groq directly
+                console.log('📡 Calling API...');
                 const response = await fetch('/api/stewie', {
                     method: 'POST',
                     headers: {
@@ -376,6 +391,7 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
                 updateStatus('Speaking...');
 
                 utterance.onend = () => {
+                    console.log('🔊 Speech ended');
                     isSpeaking = false;
                     document.getElementById('stewieImage').classList.remove('speaking');
                     if (isListening) {
@@ -443,12 +459,24 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
         }
 
         async function startApp() {
-            if (hasStarted) return;
+            console.log('🎯 startApp called');
+            
+            if (hasStarted) {
+                console.log('⚠️ Already started');
+                return;
+            }
             hasStarted = true;
 
+            console.log('✅ Starting app...');
+
             // Initialize audio context with user gesture
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            await audioContext.resume();
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                await audioContext.resume();
+                console.log('🔊 Audio context ready');
+            } catch(e) {
+                console.error('Audio context error:', e);
+            }
 
             // Test speech synthesis
             const testUtterance = new SpeechSynthesisUtterance('');
@@ -459,6 +487,7 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
                 try {
                     isListening = true;
                     recognition.start();
+                    console.log('✅ Recognition started successfully');
                 } catch(e) {
                     console.error('Start error:', e);
                     showError('Could not start. Please allow microphone access.');
@@ -466,15 +495,40 @@ Example: "Oh splendid, another simpleton requires my genius. What is it now, you
             }
         }
 
-        // Tap Stewie to start
-        document.getElementById('stewieContainer').addEventListener('click', startApp);
-        document.getElementById('stewieContainer').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            startApp();
-        });
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
 
-        // Make instructions blink to encourage tap
-        document.getElementById('instructions').classList.add('highlight');
+        function init() {
+            console.log('✅ DOM ready');
+            
+            const container = document.getElementById('stewieContainer');
+            console.log('📦 Container found:', container);
+            
+            if (container) {
+                // Multiple event listeners for better mobile support
+                container.addEventListener('click', function(e) {
+                    console.log('🖱️ CLICK detected');
+                    startApp();
+                });
+                
+                container.addEventListener('touchend', function(e) {
+                    console.log('👆 TOUCH detected');
+                    e.preventDefault();
+                    startApp();
+                });
+                
+                console.log('✅ Event listeners attached');
+                
+                // Make instructions blink
+                document.getElementById('instructions').classList.add('highlight');
+            } else {
+                console.error('❌ stewieContainer not found!');
+            }
+        }
     </script>
 </body>
 </html>
