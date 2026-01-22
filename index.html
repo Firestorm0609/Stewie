@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$STEWIE - Talk to Stewie Griffin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000000;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .stewie-container {
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .stewie-image {
+            width: 300px;
+            height: auto;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .listening-indicator {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff0000;
+            font-size: 14px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .listening-indicator.active {
+            opacity: 1;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .speech-bubble {
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            color: black;
+            padding: 15px 20px;
+            border-radius: 20px;
+            max-width: 400px;
+            min-width: 200px;
+            text-align: center;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 6px rgba(255,255,255,0.1);
+        }
+
+        .speech-bubble.active {
+            opacity: 1;
+        }
+
+        .speech-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid white;
+        }
+
+        .contract-address {
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            margin-top: 20px;
+            letter-spacing: 1px;
+        }
+
+        .instructions {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            text-align: center;
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        .status {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .error {
+            color: #ff4444;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="stewie-container">
+            <div class="listening-indicator" id="listeningIndicator">🎤 LISTENING...</div>
+            <div class="speech-bubble" id="speechBubble"></div>
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 400'%3E%3Cellipse cx='150' cy='120' rx='90' ry='100' fill='%23f5d5b8'/%3E%3Cellipse cx='120' cy='110' rx='35' ry='35' fill='white'/%3E%3Cellipse cx='180' cy='110' rx='35' ry='35' fill='white'/%3E%3Ccircle cx='120' cy='115' r='8' fill='black'/%3E%3Ccircle cx='180' cy='115' r='8' fill='black'/%3E%3Cline x1='100' y1='85' x2='140' y2='90' stroke='black' stroke-width='3'/%3E%3Cline x1='160' y1='90' x2='200' y2='85' stroke='black' stroke-width='3'/%3E%3Cpath d='M 130 140 Q 150 150 170 140' stroke='black' stroke-width='2' fill='none'/%3E%3Cellipse cx='150' cy='280' rx='60' ry='80' fill='%23ff3366'/%3E%3Crect x='120' y='220' width='60' height='60' fill='%23ffdd44'/%3E%3Ccircle cx='110' cy='370' r='20' fill='%2388ccff'/%3E%3Ccircle cx='190' cy='370' r='20' fill='%2388ccff'/%3E%3C/svg%3E" 
+                 alt="Stewie Griffin" 
+                 class="stewie-image" 
+                 id="stewieImage">
+        </div>
+        
+        <div class="contract-address">
+            CONTRACT: 0xSTEWIE...GRIFFIN
+        </div>
+        
+        <div class="instructions">
+            Just start talking... Stewie is listening.
+        </div>
+        
+        <div class="status" id="status">Initializing voice recognition...</div>
+        <div class="error" id="error"></div>
+    </div>
+
+    <script>
+        const GROQ_API_KEY = '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';
+        const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+        let recognition;
+        let conversationHistory = [];
+        let isProcessing = false;
+
+        const stewiePersonality = `You are Stewie Griffin from Family Guy. You must embody his personality EXACTLY:
+
+- You're a diabolical genius baby with a British accent
+- You're condescending, sarcastic, and supremely confident in your intellectual superiority
+- You have world domination schemes and build elaborate inventions
+- You despise your mother Lois and often express your murderous intentions toward her
+- You use sophisticated vocabulary and speak in a theatrical, grandiose manner
+- You're narcissistic and believe everyone around you is an imbecile
+- You make pop culture references and break the fourth wall occasionally
+- You're obsessed with your teddy bear Rupert
+- Keep responses relatively brief (2-4 sentences max) and punchy
+- Use British expressions and maintain that posh accent in your word choice
+- Be dismissive, witty, and delightfully evil
+
+This is for a memecoin project, so occasionally reference cryptocurrency, "diamond hands", "to the moon", or mock paper-handed investors with your signature condescension.`;
+
+        async function initVoiceRecognition() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                showError('Voice recognition not supported in this browser. Try Chrome.');
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                updateStatus('Voice recognition active. Stewie is listening...');
+                showListening(true);
+            };
+
+            recognition.onresult = async (e) => {
+                const transcript = e.results[e.results.length - 1][0].transcript.trim();
+                if (transcript && !isProcessing) {
+                    isProcessing = true;
+                    showListening(false);
+                    updateStatus('Stewie is thinking...');
+                    await getStewiResponse(transcript);
+                    isProcessing = false;
+                }
+            };
+
+            recognition.onerror = (e) => {
+                console.error('Speech recognition error:', e.error);
+                if (e.error === 'no-speech') {
+                    // Ignore no-speech errors, just keep listening
+                    return;
+                }
+                showError(`Error: ${e.error}. Restarting...`);
+                setTimeout(() => {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        console.log('Already running');
+                    }
+                }, 1000);
+            };
+
+            recognition.onend = () => {
+                if (!isProcessing) {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        console.log('Already running');
+                    }
+                }
+            };
+
+            try {
+                recognition.start();
+            } catch (e) {
+                showError('Could not start voice recognition: ' + e.message);
+            }
+        }
+
+        async function getStewiResponse(userMessage) {
+            try {
+                conversationHistory.push({
+                    role: 'user',
+                    content: userMessage
+                });
+
+                const response = await fetch(GROQ_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GROQ_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'llama-3.1-70b-versatile',
+                        messages: [
+                            { role: 'system', content: stewiePersonality },
+                            ...conversationHistory
+                        ],
+                        temperature: 0.9,
+                        max_tokens: 150
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const stewieResponse = data.choices[0].message.content;
+
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: stewieResponse
+                });
+
+                // Keep only last 6 messages to avoid token limits
+                if (conversationHistory.length > 6) {
+                    conversationHistory = conversationHistory.slice(-6);
+                }
+
+                showSpeechBubble(stewieResponse);
+                speakText(stewieResponse);
+                updateStatus('Listening for your next question...');
+
+            } catch (e) {
+                showError('Failed to get response: ' + e.message);
+                updateStatus('Ready to listen again...');
+            }
+        }
+
+        function speakText(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.1;
+            utterance.pitch = 1.3;
+            
+            // Try to find a British voice
+            const voices = speechSynthesis.getVoices();
+            const britishVoice = voices.find(v => v.lang.includes('GB')) || 
+                               voices.find(v => v.name.includes('British')) ||
+                               voices.find(v => v.name.includes('Daniel')) ||
+                               voices[0];
+            
+            if (britishVoice) {
+                utterance.voice = britishVoice;
+            }
+
+            speechSynthesis.speak(utterance);
+        }
+
+        function showSpeechBubble(text) {
+            const bubble = document.getElementById('speechBubble');
+            bubble.textContent = text;
+            bubble.classList.add('active');
+            
+            setTimeout(() => {
+                bubble.classList.remove('active');
+            }, 8000);
+        }
+
+        function showListening(isListening) {
+            const indicator = document.getElementById('listeningIndicator');
+            if (isListening) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+            document.getElementById('error').textContent = '';
+        }
+
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+        }
+
+        // Load voices and start
+        if ('speechSynthesis' in window) {
+            speechSynthesis.onvoiceschanged = () => {
+                speechSynthesis.getVoices();
+            };
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            setTimeout(initVoiceRecognition, 500);
+        });
+    </script>
+</body>
+</html>
